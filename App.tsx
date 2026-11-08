@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, StatusBar, BackHandler,
 } from 'react-native';
-
+import MoreApp from './MoreScreens';
 type Screen =
   | 'splash' | 'onboarding' | 'welcome' | 'login' | 'signup' | 'forgot'
   | 'pin' | 'newpass' | 'done' | 'fingerprint' | 'home';
@@ -323,7 +323,7 @@ export default function App() {
       {current === 'newpass' && <NewPass go={go} back={back} />}
       {current === 'done' && <Done onDone={() => reset('login')} />}
       {current === 'fingerprint' && <Fingerprint go={go} back={back} />}
-      {current === 'home' && <Home />}
+      {current === 'home' && <MoreApp onLogout={() => reset('welcome')} />}
     </View>
   );
 }
