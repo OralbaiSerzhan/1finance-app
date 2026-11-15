@@ -9,6 +9,9 @@ import NewPasswordScreen from '../screens/NewPasswordScreen';
 import PasswordChangedScreen from '../screens/PasswordChangedScreen';
 import FingerprintScreen from '../screens/FingerprintScreen';
 import MainTabs from './MainTabs';
+import NotificationScreen from '../screens/NotificationScreen';
+import AccountBalanceScreen from '../screens/AccountBalanceScreen';
+import QuickAnalysisScreen from '../screens/QuickAnalysisScreen';
 
 export type RootStackParamList = {
   Launch: undefined;
@@ -20,8 +23,12 @@ export type RootStackParamList = {
   NewPassword: undefined;
   PasswordChanged: undefined;
   Fingerprint: undefined;
-  Main: undefined;
+   Main: undefined;
+  Notification: undefined;
+  AccountBalance: undefined;
+  QuickAnalysis: undefined;
 };
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -38,6 +45,9 @@ export default function RootNavigator() {
       <Stack.Screen name="PasswordChanged" component={PasswordChangedScreen} />
       <Stack.Screen name="Fingerprint" component={FingerprintScreen} />
       <Stack.Screen name="Main" component={MainTabs} />
+      <Stack.Screen name="Notification" component={NotificationScreen} />
+      <Stack.Screen name="AccountBalance" component={AccountBalanceScreen} />
+      <Stack.Screen name="QuickAnalysis" component={QuickAnalysisScreen} />
     </Stack.Navigator>
   );
 }
