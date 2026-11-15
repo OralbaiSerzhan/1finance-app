@@ -1,139 +1,172 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/RootNavigator';
-import { colors } from '../components/FinanceUi';
-import LogoutDialog from '../components/LogoutDialog';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ScreenHeader } from '../components/FinanceUi';
+import { LogoutDialog } from '../components/LogoutDialog';
+import { COLORS, RADII } from '../constants/theme';
+import { useAppContext } from '../context/AppContext';
+import { RootStackParamList } from '../types';
 
-type Item = { key: string; label: string; icon: string; tone: string };
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const ITEMS: Item[] = [
-  { key: 'edit', label: 'Edit Profile', icon: '👤', tone: colors.lightBlue },
-  { key: 'security', label: 'Security', icon: '🛡', tone: colors.midBlue },
-  { key: 'settings', label: 'Setting', icon: '⚙', tone: colors.blue },
-  { key: 'help', label: 'Help', icon: '❓', tone: colors.lightBlue },
-  { key: 'logout', label: 'Logout', icon: '⎋', tone: colors.midBlue },
-];
+interface MenuRow {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  bgColor: string;
+  onPress: () => void;
+}
 
-export default function ProfileScreen() {
-  const insets = useSafeAreaInsets();
-  // Хук ЦЕХТЫҢ ІШІНДЕ болуы керек
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [showLogout, setShowLogout] = useState(false);
+export const ProfileScreen: React.FC = () => {
+  const navigation = useNavigation<Nav>();
+  const { user } = useAppContext();
+  const [logoutVisible, setLogoutVisible] = useState(false);
 
-  const onPress = (key: string) => {
-    switch (key) {
-      case 'edit':
-        Alert.alert('Edit Profile', 'Бұл экран әзірше жасалмаған');
-        break;
-      case 'security':
-        navigation.navigate('ProfileExtras', { screen: 'Security' });
-        break;
-      case 'settings':
-        navigation.navigate('ProfileExtras', { screen: 'Settings' });
-        break;
-      case 'help':
-        navigation.navigate('ProfileExtras', { screen: 'OnlineSupport' });
-        break;
-      case 'logout':
-        setShowLogout(true);
-        break;
-    }
-  };
+  const menuItems: MenuRow[] = [
+    {
+      label: 'Edit Profile',
+      icon: 'person-outline',
+      bgColor: COLORS.blueSoft,
+      onPress: () => navigation.navigate('EditProfile'),
+    },
+    {
+      label: 'Security',
+      icon: 'shield-checkmark-outline',
+      bgColor: COLORS.blueSoft,
+      onPress: () => navigation.navigate('Security'),
+    },
+    {
+      label: 'Setting',
+      icon: 'settings-outline',
+      bgColor: COLORS.blueAccent,
+      onPress: () => navigation.navigate('Settings'),
+    },
+    {
+      label: 'Help',
+      icon: 'help-buoy-outline',
+      bgColor: COLORS.blueSoft,
+      onPress: () => navigation.navigate('OnlineSupport'),
+    },
+    {
+      label: 'Logout',
+      icon: 'log-out-outline',
+      bgColor: COLORS.blueSoft,
+      onPress: () => setLogoutVisible(true),
+    },
+  ];
 
   return (
-    <View style={[s.root, { paddingTop: insets.top }]}>
-      <View style={s.topBar}>
-        <Text style={s.title}>Profile</Text>
-        <Pressable style={s.bell} onPress={() => navigation.navigate('Notification')} hitSlop={10}>
-          <Text style={{ fontSize: 14 }}>🔔</Text>
-        </Pressable>
-      </View>
+    <SafeAreaView style={[styles.root, user.darkTheme && { backgroundColor: COLORS.darkBg }]}>
+      <ScreenHeader
+        title="Profile"
+        onBack={() => navigation.goBack()}
+        onBellPress={() => navigation.navigate('Notifications')}
+      />
 
-      <View style={s.avatarWrap}>
-        <View style={s.avatar}>
-          <Text style={{ fontSize: 48 }}>👤</Text>
+      <View style={[styles.sheet, user.darkTheme && { backgroundColor: COLORS.darkSurface }]}>
+        <View style={styles.avatarWrap}>
+          <View style={styles.avatarCircle}>
+            <Ionicons name="person" size={44} color={COLORS.surfaceWhite} />
+          </View>
+          <Text style={[styles.name, user.darkTheme && { color: COLORS.darkText }]}>
+            {user.name}
+          </Text>
+          <Text style={styles.userId}>ID: {user.userId}</Text>
         </View>
-      </View>
 
-      <View style={s.sheet}>
-        <Text style={s.name}>John Smith</Text>
-        <Text style={s.id}>ID: 25030024</Text>
-
-        <View style={{ marginTop: 24 }}>
-          {ITEMS.map((it) => (
-            <Pressable key={it.key} style={s.row} onPress={() => onPress(it.key)}>
-              <View style={[s.icon, { backgroundColor: it.tone }]}>
-                <Text style={{ fontSize: 16, color: '#fff' }}>{it.icon}</Text>
-              </View>
-              <Text style={s.label}>{it.label}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.menuList}>
+            {menuItems.map((item) => (
+              <TouchableOpacity
+                key={item.label}
+                style={styles.menuRow}
+                activeOpacity={0.75}
+                onPress={item.onPress}
+              >
+                <View style={[styles.iconBox, { backgroundColor: item.bgColor }]}>
+                  <Ionicons name={item.icon} size={22} color={COLORS.surfaceWhite} />
+                </View>
+                <Text style={[styles.menuLabel, user.darkTheme && { color: COLORS.darkText }]}>
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
       </View>
 
       <LogoutDialog
-        visible={showLogout}
-        onCancel={() => setShowLogout(false)}
+        visible={logoutVisible}
+        onCancel={() => setLogoutVisible(false)}
         onConfirm={() => {
-          setShowLogout(false);
-          navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          setLogoutVisible(false);
+          navigation.navigate('MainTabs');
         }}
       />
-    </View>
+    </SafeAreaView>
   );
-}
+};
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.green },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  title: { flex: 1, textAlign: 'center', fontSize: 20, fontWeight: '700', color: colors.dark, marginLeft: 32 },
-  bell: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.light,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarWrap: { alignItems: 'center', zIndex: 2, marginBottom: -50 },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.lightGreen,
-    borderWidth: 3,
-    borderColor: colors.light,
-    alignItems: 'center',
-    justifyContent: 'center',
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
   },
   sheet: {
     flex: 1,
-    marginTop: 0,
-    paddingTop: 64,
-    paddingHorizontal: 32,
-    backgroundColor: colors.light,
-    borderTopLeftRadius: 56,
-    borderTopRightRadius: 56,
+    marginTop: 32,
+    backgroundColor: COLORS.backgroundMint,
+    borderTopLeftRadius: RADII.xl,
+    borderTopRightRadius: RADII.xl,
+    paddingHorizontal: 24,
   },
-  name: { fontSize: 18, fontWeight: '700', color: colors.dark, textAlign: 'center' },
-  id: { fontSize: 12, color: colors.dark, textAlign: 'center', marginTop: 2 },
-  row: { flexDirection: 'row', alignItems: 'center', marginBottom: 22 },
-  icon: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
+  avatarWrap: {
+    alignItems: 'center',
+    marginTop: -46,
+    marginBottom: 24,
+  },
+  avatarCircle: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    backgroundColor: COLORS.textDark,
+    borderWidth: 4,
+    borderColor: COLORS.surfaceWhite,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginBottom: 10,
   },
-  label: { fontSize: 14, color: colors.dark, fontWeight: '500' },
+  name: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: COLORS.textDark,
+  },
+  userId: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  menuList: {
+    gap: 18,
+    paddingBottom: 30,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: RADII.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textDark,
+  },
 });

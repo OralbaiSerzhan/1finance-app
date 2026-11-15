@@ -1,34 +1,58 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Period } from '../types';
-import { colors, radius } from '../constants/theme';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { COLORS, RADII } from '../constants/theme';
+import { PeriodOption } from '../types';
 
-const options: Period[] = ['Daily', 'Weekly', 'Monthly'];
+interface PeriodToggleProps {
+  value: PeriodOption;
+  onChange: (period: PeriodOption) => void;
+}
 
-type Props = { value: Period; onChange: (p: Period) => void };
+const OPTIONS: PeriodOption[] = ['Daily', 'Weekly', 'Monthly', 'Year'];
 
-export default function PeriodToggle({ value, onChange }: Props) {
+export const PeriodToggle: React.FC<PeriodToggleProps> = ({ value, onChange }) => {
   return (
-    <View style={styles.wrapper}>
-      {options.map((opt) => {
-        const active = opt === value;
+    <View style={styles.container}>
+      {OPTIONS.map((option) => {
+        const active = option === value;
         return (
           <TouchableOpacity
-            key={opt}
-            style={[styles.btn, active && styles.btnActive]}
-            onPress={() => onChange(opt)}
+            key={option}
+            onPress={() => onChange(option)}
+            style={[styles.tab, active && styles.activeTab]}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.text, active && styles.textActive]}>{opt}</Text>
+            <Text style={[styles.tabText, active && styles.activeTabText]}>{option}</Text>
           </TouchableOpacity>
         );
       })}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  wrapper: { flexDirection: 'row', backgroundColor: colors.inputBg, borderRadius: radius.md, padding: 4 },
-  btn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: radius.md },
-  btnActive: { backgroundColor: colors.primary },
-  text: { color: colors.muted, fontWeight: '600' },
-  textActive: { color: colors.white },
+  container: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.cardLight,
+    borderRadius: RADII.lg,
+    padding: 4,
+    marginBottom: 16,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: RADII.lg,
+    alignItems: 'center',
+  },
+  activeTab: {
+    backgroundColor: COLORS.primary,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.textDark,
+  },
+  activeTabText: {
+    fontWeight: '700',
+  },
 });

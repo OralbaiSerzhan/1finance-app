@@ -1,136 +1,162 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/RootNavigator';
-import { BalanceSummary, TxRow, colors } from '../components/FinanceUi';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BalanceSummaryCard } from '../components/FinanceUi';
+import { TransactionItem } from '../components/TransactionItem';
+import { COLORS, RADII } from '../constants/theme';
+import { useAppContext } from '../context/AppContext';
+import { RootStackParamList } from '../types';
 
-type Period = 'Daily' | 'Weekly' | 'Monthly';
-const PERIODS: Period[] = ['Daily', 'Weekly', 'Monthly'];
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [period, setPeriod] = useState<Period>('Monthly');
+export const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<Nav>();
+  const { user, totalBalance, totalExpense, transactions } = useAppContext();
+  const isDark = user.darkTheme;
 
   return (
-    <View style={[s.root, { paddingTop: insets.top }]}>
-      <View style={s.topBar}>
+    <SafeAreaView style={[styles.root, isDark && { backgroundColor: COLORS.darkBg }]}>
+      <View style={styles.topHeader}>
         <View>
-          <Text style={s.hi}>Hi, Welcome Back</Text>
-          <Text style={s.morning}>Good Morning</Text>
+          <Text style={styles.greeting}>Hi, Welcome Back</Text>
+          <Text style={styles.userName}>{user.name}</Text>
         </View>
-        <Pressable style={s.bell} onPress={() => navigation.navigate('Notification')} hitSlop={10}>
-          <Text style={{ fontSize: 14 }}>🔔</Text>
-        </Pressable>
+        <TouchableOpacity
+          style={styles.bellBtn}
+          onPress={() => navigation.navigate('Notifications')}
+        >
+          <Ionicons name="notifications-outline" size={20} color={COLORS.textDark} />
+        </TouchableOpacity>
       </View>
 
-      <Pressable onPress={() => navigation.navigate('AccountBalance')}>
-        <BalanceSummary balance="$7,783.00" expense="-$1.187.40" />
-      </Pressable>
+      <BalanceSummaryCard totalBalance={totalBalance} totalExpense={totalExpense} />
 
-      <View style={s.sheet}>
-        <ScrollView
-          contentContainerStyle={{ padding: 24, paddingBottom: 120 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <Pressable style={s.goals} onPress={() => navigation.navigate('QuickAnalysis')}>
-            <View style={s.ring}>
-              <Text style={{ fontSize: 26 }}>🚗</Text>
-              <Text style={s.ringText}>Savings{'\n'}On Goals</Text>
-            </View>
-            <View style={s.vDivider} />
-            <View style={{ flex: 1, paddingLeft: 16 }}>
-              <Text style={s.small}>Revenue Last Week</Text>
-              <Text style={s.value}>$4.000.00</Text>
-              <View style={s.hLine} />
-              <Text style={s.small}>Food Last Week</Text>
-              <Text style={[s.value, { color: colors.blue }]}>-$100.00</Text>
-            </View>
-          </Pressable>
-
-          <View style={s.toggle}>
-            {PERIODS.map((p) => (
-              <Pressable
-                key={p}
-                onPress={() => setPeriod(p)}
-                style={[s.toggleItem, period === p && s.toggleActive]}
-              >
-                <Text style={[s.toggleText, period === p && { color: colors.dark, fontWeight: '600' }]}>
-                  {p}
-                </Text>
-              </Pressable>
-            ))}
+      <View style={[styles.sheet, isDark && { backgroundColor: COLORS.darkSurface }]}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.quickRow}>
+            <TouchableOpacity
+              style={styles.quickBtn}
+              onPress={() => navigation.navigate('QuickAnalysis')}
+            >
+              <Ionicons name="analytics-outline" size={20} color={COLORS.textDark} />
+              <Text style={styles.quickLabel}>Quick Analysis</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.quickBtn}
+              onPress={() => navigation.navigate('AccountBalance')}
+            >
+              <Ionicons name="wallet-outline" size={20} color={COLORS.textDark} />
+              <Text style={styles.quickLabel}>Balance</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.quickBtn}
+              onPress={() => navigation.navigate('Search')}
+            >
+              <Ionicons name="search-outline" size={20} color={COLORS.textDark} />
+              <Text style={styles.quickLabel}>Search</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.quickBtn}
+              onPress={() => navigation.navigate('Calendar')}
+            >
+              <Ionicons name="calendar-outline" size={20} color={COLORS.textDark} />
+              <Text style={styles.quickLabel}>Calendar</Text>
+            </TouchableOpacity>
           </View>
 
-          <TxRow title="Salary" time="18:27 - April 30" category="Monthly" amount="$4,000,00" tone="light" />
-          <TxRow title="Groceries" time="17:00 - April 24" category="Pantry" amount="-$100,00" negative />
-          <TxRow title="Rent" time="8:30 - April 15" category="Rent" amount="-$674,40" negative tone="strong" />
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, isDark && { color: COLORS.darkText }]}>
+              Recent Transactions
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AddExpense')}>
+              <Text style={styles.addLink}>+ Add Expense</Text>
+            </TouchableOpacity>
+          </View>
+
+          {transactions.slice(0, 6).map((item) => (
+            <TransactionItem key={item.id} item={item} />
+          ))}
         </ScrollView>
       </View>
-    </View>
+    </SafeAreaView>
   );
-}
+};
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.green },
-  topBar: {
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+  },
+  topHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 22,
+    paddingTop: 10,
+    paddingBottom: 14,
   },
-  hi: { fontSize: 20, fontWeight: '700', color: colors.dark },
-  morning: { fontSize: 12, color: colors.dark },
-  bell: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.light,
+  greeting: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textDark,
+  },
+  userName: {
+    fontSize: 13,
+    color: COLORS.textDark,
+    opacity: 0.85,
+  },
+  bellBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.surfaceWhite,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sheet: {
     flex: 1,
-    marginTop: 20,
-    backgroundColor: colors.light,
-    borderTopLeftRadius: 56,
-    borderTopRightRadius: 56,
-    overflow: 'hidden',
+    backgroundColor: COLORS.backgroundMint,
+    borderTopLeftRadius: RADII.xl,
+    borderTopRightRadius: RADII.xl,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
-  goals: {
+  quickRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.green,
-    borderRadius: 24,
-    padding: 16,
+    justifyContent: 'space-between',
     marginBottom: 20,
+    gap: 8,
   },
-  ring: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    borderWidth: 4,
-    borderColor: colors.blue,
-    backgroundColor: colors.light,
+  quickBtn: {
+    flex: 1,
+    backgroundColor: COLORS.cardLight,
+    borderRadius: RADII.md,
+    paddingVertical: 12,
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 4,
   },
-  ringText: { fontSize: 8, textAlign: 'center', color: colors.dark },
-  vDivider: { width: 1, height: 80, backgroundColor: '#fff', marginLeft: 16 },
-  small: { fontSize: 10, color: colors.dark },
-  value: { fontSize: 16, fontWeight: '700', color: colors.dark, marginBottom: 4 },
-  hLine: { height: 1, backgroundColor: '#fff', marginBottom: 6 },
-  toggle: {
+  quickLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textDark,
+  },
+  sectionHeader: {
     flexDirection: 'row',
-    backgroundColor: colors.lightGreen,
-    borderRadius: 16,
-    padding: 4,
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  toggleItem: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 14 },
-  toggleActive: { backgroundColor: colors.green },
-  toggleText: { fontSize: 12, color: colors.dark },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textDark,
+  },
+  addLink: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primaryDark,
+  },
 });

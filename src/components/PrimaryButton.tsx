@@ -1,23 +1,66 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors, radius } from '../constants/theme';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { COLORS, RADII } from '../constants/theme';
 
-type Props = { label: string; onPress: () => void };
+interface PrimaryButtonProps {
+  title: string;
+  onPress: () => void;
+  style?: ViewStyle;
+  variant?: 'primary' | 'secondary';
+}
 
-export default function PrimaryButton({ label, onPress }: Props) {
+export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
+  title,
+  onPress,
+  style,
+  variant = 'primary',
+}) => {
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-      <Text style={styles.label}>{label}</Text>
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={[
+        styles.button,
+        variant === 'secondary' ? styles.secondary : styles.primary,
+        style,
+      ]}
+    >
+      <Text
+        style={[
+          styles.label,
+          variant === 'secondary' ? styles.secondaryLabel : styles.primaryLabel,
+        ]}
+      >
+        {title}
+      </Text>
     </TouchableOpacity>
   );
-}
+};
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: colors.primary,
-    paddingVertical: 14,
-    borderRadius: radius.md,
+    height: 44,
+    borderRadius: RADII.full,
     alignItems: 'center',
-    marginVertical: 8,
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    alignSelf: 'center',
+    minWidth: 170,
   },
-  label: { color: colors.white, fontWeight: '600', fontSize: 16 },
+  primary: {
+    backgroundColor: COLORS.primary,
+  },
+  secondary: {
+    backgroundColor: COLORS.cardLight,
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  primaryLabel: {
+    color: COLORS.textDark,
+  },
+  secondaryLabel: {
+    color: COLORS.textDark,
+  },
 });

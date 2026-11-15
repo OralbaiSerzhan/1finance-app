@@ -1,172 +1,185 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, RADII } from '../constants/theme';
+import { formatCurrency } from '../utils/format';
 
-export const colors = {
-  green: '#00D09E',
-  dark: '#052224',
-  light: '#F1FFF3',
-  lightGreen: '#DFF7E2',
-  blue: '#0068FF',
-  lightBlue: '#6DB6FE',
-  midBlue: '#3299FF',
-};
-
-type ShellProps = {
+interface ScreenHeaderProps {
   title: string;
   onBack?: () => void;
-  header?: React.ReactNode;
-  children: React.ReactNode;
+  onBellPress?: () => void;
+}
+
+export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
+  title,
+  onBack,
+  onBellPress,
+}) => {
+  return (
+    <View style={styles.header}>
+      {onBack ? (
+        <TouchableOpacity onPress={onBack} style={styles.iconButton}>
+          <Ionicons name="arrow-back" size={22} color={COLORS.textDark} />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.placeholder} />
+      )}
+      <Text style={styles.headerTitle}>{title}</Text>
+      {onBellPress ? (
+        <TouchableOpacity onPress={onBellPress} style={styles.bellButton}>
+          <Ionicons name="notifications-outline" size={18} color={COLORS.textDark} />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.placeholder} />
+      )}
+    </View>
+  );
 };
 
-export function ScreenShell({ title, onBack, header, children }: ShellProps) {
-  const insets = useSafeAreaInsets();
+interface BalanceSummaryCardProps {
+  totalBalance: number;
+  totalExpense: number;
+  goalAmount?: number;
+}
+
+export const BalanceSummaryCard: React.FC<BalanceSummaryCardProps> = ({
+  totalBalance,
+  totalExpense,
+  goalAmount = 20000,
+}) => {
+  const pct = Math.min(100, Math.round((totalExpense / goalAmount) * 100));
+
   return (
-    <View style={[s.root, { paddingTop: insets.top }]}>
-      <View style={s.topBar}>
-        <Pressable onPress={onBack} hitSlop={12} style={s.side}>
-          <Text style={s.back}>←</Text>
-        </Pressable>
-        <Text style={s.title}>{title}</Text>
-        <View style={s.bell}>
-          <Text style={{ fontSize: 14 }}>🔔</Text>
+    <View style={styles.summaryWrapper}>
+      <View style={styles.statsRow}>
+        <View style={styles.statCol}>
+          <Text style={styles.statLabel}>Total Balance</Text>
+          <Text style={styles.balanceValue}>{formatCurrency(totalBalance)}</Text>
+        </View>
+        <View style={styles.vertLine} />
+        <View style={styles.statCol}>
+          <Text style={styles.statLabel}>Total Expense</Text>
+          <Text style={styles.expenseValue}>-{formatCurrency(totalExpense)}</Text>
         </View>
       </View>
-      {header}
-      <View style={s.sheet}>
-        <ScrollView
-          contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
+
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${Math.max(pct, 20)}%` }]}>
+          <Text style={styles.progressPct}>{pct}%</Text>
+        </View>
+        <Text style={styles.goalText}>{formatCurrency(goalAmount)}</Text>
+      </View>
+
+      <View style={styles.hintRow}>
+        <Ionicons name="checkbox-outline" size={14} color={COLORS.textDark} />
+        <Text style={styles.hintText}>{pct}% Of Your Expenses, Looks Good.</Text>
       </View>
     </View>
   );
-}
-
-type SummaryProps = { balance: string; expense: string; percent?: number; goal?: string };
-
-export function BalanceSummary({ balance, expense, percent = 30, goal = '$20,000.00' }: SummaryProps) {
-  return (
-    <View style={s.summary}>
-      <View style={s.summaryRow}>
-        <View style={{ flex: 1 }}>
-          <Text style={s.smallLight}>Total Balance</Text>
-          <Text style={s.bigWhite}>{balance}</Text>
-        </View>
-        <View style={s.vDivider} />
-        <View style={{ flex: 1, paddingLeft: 16 }}>
-          <Text style={s.smallLight}>Total Expense</Text>
-          <Text style={s.bigBlue}>{expense}</Text>
-        </View>
-      </View>
-      <View style={s.progress}>
-        <View style={[s.progressDark, { width: `${percent}%` }]}>
-          <Text style={s.progressText}>{percent}%</Text>
-        </View>
-        <Text style={s.progressGoal}>{goal}</Text>
-      </View>
-      <Text style={s.hint}>☑ {percent}% Of Your Expenses, Looks Good.</Text>
-    </View>
-  );
-}
-
-type TxProps = {
-  title: string;
-  time: string;
-  category: string;
-  amount: string;
-  negative?: boolean;
-  tone?: 'light' | 'mid' | 'strong';
 };
 
-export function TxRow({ title, time, category, amount, negative, tone = 'mid' }: TxProps) {
-  const bg =
-    tone === 'light' ? colors.lightBlue : tone === 'strong' ? colors.blue : colors.midBlue;
-  return (
-    <View style={s.tx}>
-      <View style={[s.txIcon, { backgroundColor: bg }]}>
-        <Text style={{ fontSize: 18 }}>💳</Text>
-      </View>
-      <View style={{ flex: 1.4 }}>
-        <Text style={s.txTitle}>{title}</Text>
-        <Text style={s.txTime}>{time}</Text>
-      </View>
-      <View style={s.txDivider} />
-      <Text style={s.txCat}>{category}</Text>
-      <View style={s.txDivider} />
-      <Text style={[s.txAmount, negative && { color: colors.blue }]}>{amount}</Text>
-    </View>
-  );
-}
-
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.green },
-  topBar: {
+const styles = StyleSheet.create({
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 14,
   },
-  side: { width: 32 },
-  back: { fontSize: 24, color: '#fff' },
-  title: { fontSize: 20, fontWeight: '700', color: colors.dark },
-  bell: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.light,
+  iconButton: {
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sheet: {
+  bellButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: COLORS.surfaceWhite,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholder: {
+    width: 34,
+  },
+  headerTitle: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: COLORS.textDark,
+  },
+  summaryWrapper: {
+    paddingHorizontal: 22,
+    paddingBottom: 18,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statCol: {
     flex: 1,
-    marginTop: 16,
-    backgroundColor: colors.light,
-    borderTopLeftRadius: 56,
-    borderTopRightRadius: 56,
-    overflow: 'hidden',
   },
-  summary: { paddingHorizontal: 24 },
-  summaryRow: { flexDirection: 'row', alignItems: 'center' },
-  vDivider: { width: 1, height: 44, backgroundColor: '#fff' },
-  smallLight: { color: colors.dark, fontSize: 12 },
-  bigWhite: { color: '#fff', fontSize: 24, fontWeight: '700' },
-  bigBlue: { color: colors.blue, fontSize: 24, fontWeight: '700' },
-  progress: {
+  vertLine: {
+    width: 1,
+    height: 36,
+    backgroundColor: COLORS.surfaceWhite,
+    marginHorizontal: 14,
+    opacity: 0.6,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textDark,
+    marginBottom: 2,
+  },
+  balanceValue: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.surfaceWhite,
+  },
+  expenseValue: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.blueAccent,
+  },
+  progressTrack: {
     height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    marginTop: 12,
+    borderRadius: RADII.full,
+    backgroundColor: COLORS.surfaceWhite,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingRight: 12,
     overflow: 'hidden',
   },
-  progressDark: {
-    height: 24,
-    backgroundColor: colors.dark,
+  progressFill: {
+    height: '100%',
+    backgroundColor: COLORS.textDark,
+    borderRadius: RADII.full,
     justifyContent: 'center',
-    paddingLeft: 10,
-    borderRadius: 12,
+    paddingLeft: 12,
   },
-  progressText: { color: '#fff', fontSize: 11 },
-  progressGoal: { position: 'absolute', right: 12, fontSize: 11, color: colors.dark, fontStyle: 'italic' },
-  hint: { color: colors.dark, fontSize: 12, marginTop: 8 },
-  tx: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
-  txIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+  progressPct: {
+    color: COLORS.surfaceWhite,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  goalText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textDark,
+  },
+  hintRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+    gap: 6,
+    marginTop: 8,
   },
-  txTitle: { fontSize: 14, fontWeight: '600', color: colors.dark },
-  txTime: { fontSize: 11, color: colors.blue, marginTop: 2 },
-  txDivider: { width: 1, height: 36, backgroundColor: colors.green, marginHorizontal: 10 },
-  txCat: { flex: 0.8, fontSize: 12, color: colors.dark, textAlign: 'center' },
-  txAmount: { flex: 1, fontSize: 14, fontWeight: '600', color: colors.dark, textAlign: 'right' },
+  hintText: {
+    fontSize: 12,
+    color: COLORS.textDark,
+    fontWeight: '500',
+  },
 });

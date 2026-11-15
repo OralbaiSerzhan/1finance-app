@@ -1,39 +1,50 @@
-import { TextInput, Text, View, StyleSheet } from 'react-native';
-import { colors, radius } from '../constants/theme';
+import React from 'react';
+import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { COLORS, RADII } from '../constants/theme';
 
-type Props = {
-  label: string;
-  placeholder?: string;
-  secure?: boolean;
-  value: string;
-  onChangeText: (text: string) => void;
-};
-
-export default function AppInput({ label, placeholder, secure, value, onChangeText }: Props) {
-  return (
-    <View style={styles.wrapper}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder={placeholder}
-        placeholderTextColor={colors.muted}
-        secureTextEntry={secure}
-        value={value}
-        onChangeText={onChangeText}
-        autoCapitalize="none"
-      />
-    </View>
-  );
+interface AppInputProps extends TextInputProps {
+  label?: string;
+  rightElement?: React.ReactNode;
 }
 
+export const AppInput: React.FC<AppInputProps> = ({ label, rightElement, style, ...rest }) => {
+  return (
+    <View style={styles.wrapper}>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
+      <View style={styles.inputRow}>
+        <TextInput
+          placeholderTextColor={COLORS.textMuted}
+          style={[styles.input, style]}
+          {...rest}
+        />
+        {rightElement}
+      </View>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: 12 },
-  label: { color: colors.dark, fontSize: 13, marginBottom: 4 },
-  input: {
-    backgroundColor: colors.inputBg,
-    borderRadius: radius.md,
+  wrapper: {
+    marginBottom: 14,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textDark,
+    marginBottom: 6,
+  },
+  inputRow: {
+    backgroundColor: COLORS.cardLight,
+    borderRadius: RADII.md,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: colors.dark,
+    minHeight: 46,
+  },
+  input: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.textDark,
+    paddingVertical: 10,
   },
 });
