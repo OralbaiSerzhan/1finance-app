@@ -12,6 +12,8 @@ import MainTabs from './MainTabs';
 import NotificationScreen from '../screens/NotificationScreen';
 import AccountBalanceScreen from '../screens/AccountBalanceScreen';
 import QuickAnalysisScreen from '../screens/QuickAnalysisScreen';
+import type { NavigatorScreenParams } from '@react-navigation/native';
+import ProfileExtrasNavigator, { ProfileExtrasParamList } from './ProfileExtrasNavigator';
 
 export type RootStackParamList = {
   Launch: undefined;
@@ -23,7 +25,8 @@ export type RootStackParamList = {
   NewPassword: undefined;
   PasswordChanged: undefined;
   Fingerprint: undefined;
-   Main: undefined;
+  Main: undefined;
+  ProfileExtras: NavigatorScreenParams<ProfileExtrasParamList> | undefined;
   Notification: undefined;
   AccountBalance: undefined;
   QuickAnalysis: undefined;
@@ -48,6 +51,7 @@ export default function RootNavigator() {
       <Stack.Screen name="Notification" component={NotificationScreen} />
       <Stack.Screen name="AccountBalance" component={AccountBalanceScreen} />
       <Stack.Screen name="QuickAnalysis" component={QuickAnalysisScreen} />
+      <Stack.Screen name="ProfileExtras" component={ProfileExtrasNavigator} />
     </Stack.Navigator>
   );
 }
